@@ -1,0 +1,1063 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <title>Healthcare Enterprise ERP</title>
+    <style>
+        :root {
+            --primary-color: #2563eb;
+            --secondary-color: #1e40af;
+            --bg-color: #f8fafc;
+            --card-bg: #ffffff;
+            --text-color: #1e293b;
+            --border-color: #e2e8f0;
+            --sidebar-bg: #ffffff;
+            --header-bg: #ffffff;
+        }
+
+        [data-theme="dark"] {
+            --primary-color: #3b82f6;
+            --secondary-color: #60a5fa;
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --text-color: #f8fafc;
+            --border-color: #334155;
+            --sidebar-bg: #1e293b;
+            --header-bg: #1e293b;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; transition: background 0.3s, color 0.3s; }
+        body { background-color: var(--bg-color); color: var(--text-color); display: flex; height: 100vh; overflow: hidden; }
+
+        #login-container {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%);
+            display: flex; justify-content: center; align-items: center; z-index: 1000;
+        }
+
+        .login-wrapper {
+            display: flex; background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px);
+            width: 900px; max-width: 90%; border-radius: 20px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.3); overflow: hidden;
+            position: relative;
+        }
+
+        .login-lang-switch {
+            position: absolute; top: 20px; right: 20px; z-index: 10;
+        }
+
+        .login-image-side {
+            flex: 1; background: url('https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?auto=format&fit=crop&w=800&q=80') center/cover no-repeat;
+            position: relative; min-height: 450px;
+        }
+
+        .login-image-side::after {
+            content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(to bottom, rgba(37, 99, 235, 0.2), rgba(30, 64, 175, 0.8));
+        }
+
+        .login-image-content { position: absolute; bottom: 30px; left: 30px; right: 30px; color: white; z-index: 2; }
+        .login-image-content h3 { font-size: 1.8rem; margin-bottom: 10px; }
+        .login-image-content p { font-size: 0.95rem; opacity: 0.9; }
+
+        .login-form-side { flex: 1; padding: 60px 40px 40px 40px; display: flex; flex-direction: column; justify-content: center; }
+        .login-form-side h2 { margin-bottom: 8px; color: var(--secondary-color); font-size: 1.8rem; }
+        .login-form-side .subtitle { margin-bottom: 25px; color: #64748b; font-size: 0.9rem; }
+        .login-form-side .form-group { margin-bottom: 15px; text-align: left; }
+        .login-form-side label { display: block; margin-bottom: 6px; font-weight: 600; font-size: 0.85rem; color: #475569; }
+        .login-form-side input, .login-form-side select { width: 100%; padding: 10px 15px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 0.95rem; background: #f8fafc; color: #1e293b; }
+        
+        .login-btn { 
+            width: 100%; padding: 12px; background: linear-gradient(135deg, #2563eb, #1e40af); 
+            color: white; border: none; border-radius: 8px; font-size: 1rem; font-weight: bold; cursor: pointer; 
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3); margin-top: 10px;
+        }
+
+        #app-container { display: none; width: 100%; height: 100%; }
+        aside { width: 260px; background-color: var(--sidebar-bg); border-right: 1px solid var(--border-color); display: flex; flex-direction: column; }
+        .logo-area { padding: 25px 20px; font-size: 1.25rem; font-weight: bold; color: var(--primary-color); border-bottom: 1px solid var(--border-color); text-align: center; }
+        .nav-links { list-style: none; padding: 20px 10px; }
+        .nav-links li { padding: 12px 15px; margin-bottom: 8px; border-radius: 8px; cursor: pointer; font-weight: 500; color: #64748b; }
+        .nav-links li:hover, .nav-links li.active { background-color: var(--primary-color); color: white; }
+        main { flex: 1; display: flex; flex-direction: column; overflow-y: auto; }
+        header { background-color: var(--header-bg); padding: 15px 30px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; }
+        header h1 { font-size: 1.5rem; color: var(--text-color); }
+        
+        .header-controls { display: flex; align-items: center; gap: 15px; }
+        .icon-btn { background: none; border: none; font-size: 1.2rem; cursor: pointer; padding: 5px; border-radius: 50%; }
+        
+        .user-profile { font-weight: 600; color: var(--primary-color); display: flex; gap: 15px; align-items: center; }
+        .logout-btn { background: #ef4444; color: white; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 0.85rem; }
+        
+        .content-body { padding: 30px; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        .card { background-color: var(--card-bg); border: 1px solid var(--border-color); border-radius: 12px; padding: 30px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); margin-bottom: 25px; }
+        .card h2 { margin-bottom: 20px; font-size: 1.3rem; color: var(--secondary-color); }
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; margin-bottom: 5px; font-weight: 500; font-size: 0.9rem; }
+        .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: 6px; font-size: 0.95rem; background: var(--bg-color); color: var(--text-color); }
+        
+        button.btn-primary { background-color: var(--primary-color); color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: 600; }
+        button.btn-success { background-color: #10b981; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-weight: 600; }
+        button.btn-warning { background-color: #f59e0b; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-weight: 600; }
+        button.btn-danger { background-color: #ef4444; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-weight: 600; }
+        button.btn-excel { background-color: #10b981; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: 600; margin-bottom: 15px; }
+
+        .search-box { width: 100%; padding: 10px; margin-bottom: 15px; border: 1px solid var(--border-color); border-radius: 6px; font-size: 0.95rem; background: var(--bg-color); color: var(--text-color); }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th, td { padding: 12px; border-bottom: 1px solid var(--border-color); text-align: left; font-size: 0.95rem; }
+        th { background-color: var(--border-color); color: var(--text-color); }
+
+        .dashboard-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; }
+        .stat-card { background: var(--card-bg); padding: 25px; border-radius: 16px; border: 1px solid var(--border-color); box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05); position: relative; overflow: hidden; }
+        .stat-card::before { content: ''; position: absolute; top: 0; left: 0; width: 5px; height: 100%; background: var(--primary-color); }
+        .stat-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+        .stat-card p { font-size: 2rem; font-weight: 700; color: var(--text-color); }
+
+        .alert-banner { background-color: #fef2f2; border: 1px solid #fecaca; color: #991b1b; padding: 15px; border-radius: 8px; margin-bottom: 20px; font-weight: 600; display: none; }
+        .badge { padding: 4px 8px; border-radius: 4px; font-size: 0.8rem; font-weight: bold; }
+        .badge-pending { background-color: #fef3c7; color: #d97706; }
+        .badge-confirmed { background-color: #d1fae5; color: #065f46; }
+        .badge-completed { background-color: #e0e7ff; color: #3730a3; }
+        
+        #toast-notification {
+            position: fixed; bottom: 25px; right: 25px; background: #10b981; color: white; padding: 15px 25px;
+            border-radius: 8px; box-shadow: 0 10px 15px rgba(0,0,0,0.2); z-index: 3000; display: none; font-weight: 600;
+        }
+        #printable-prescription { display: none; }
+
+        @media print {
+            aside, header, button, .search-box, .card:has(h2) { display: none !important; }
+            body, main, .content-body, .card { background: white !important; box-shadow: none !important; border: none !important; padding: 0 !important; margin: 0 !important; }
+            table { width: 100% !important; border: 1px solid #000 !important; }
+            th, td { border: 1px solid #000 !important; color: #000 !important; }
+        }
+    </style>
+</head>
+<body data-theme="light">
+
+    <div id="toast-notification">✅ Action completed successfully!</div>
+
+    <div id="printable-prescription">
+        <div style="text-align: center; border-bottom: 2px solid #2563eb; padding-bottom: 15px; margin-bottom: 20px;">
+            <h1 style="color: #2563eb; font-size: 24px; margin-bottom: 5px;">HEALTHCARE ENTERPRISE ERP</h1>
+            <p style="color: #64748b; font-size: 14px;">Official Medical Prescription Slip</p>
+        </div>
+        <div style="margin-bottom: 15px; font-size: 16px;">
+            <p><strong>Patient Name:</strong> <span id="print-pat-name"></span></p>
+            <p><strong>Date:</strong> <span id="print-date"></span></p>
+        </div>
+        <div style="margin-bottom: 20px; font-size: 15px;">
+            <p><strong>Diagnosis / Notes:</strong></p>
+            <p id="print-diag" style="background: #f8fafc; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; margin-top: 5px; min-height: 50px;"></p>
+        </div>
+        <div style="margin-bottom: 40px; font-size: 15px;">
+            <p><strong>Prescribed Medicines & Dosage:</strong></p>
+            <p id="print-meds" style="background: #f8fafc; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; margin-top: 5px; min-height: 80px; white-space: pre-line;"></p>
+        </div>
+        <div style="display: flex; justify-content: space-between; margin-top: 60px; font-size: 14px;">
+            <p>___________________________<br>Patient Signature</p>
+            <p style="text-align: right;">___________________________<br>Doctor's Signature & Stamp</p>
+        </div>
+    </div>
+
+    <div id="login-container">
+        <div class="login-wrapper">
+            <div class="login-lang-switch">
+                <select id="login-lang-switcher" onchange="switchLanguage(this.value)" style="padding: 5px 10px; border-radius: 6px; border: 1px solid var(--border-color); background: rgba(255,255,255,0.9); font-weight: 600;">
+                    <option value="en">English</option>
+                    <option value="si">සිංහල</option>
+                </select>
+            </div>
+            <div class="login-image-side">
+                <div class="login-image-content">
+                    <h3 id="txt-login-title">Enterprise Healthcare ERP</h3>
+                    <p id="txt-login-desc">Multi-role advanced hospital management & clinical system.</p>
+                </div>
+            </div>
+            <div class="login-form-side">
+                <h2 id="txt-welcome">Welcome Back</h2>
+                <p class="subtitle" id="txt-signin-sub">Please sign in to continue</p>
+                <div class="form-group">
+                    <label id="lbl-select-role">Select Role</label>
+                    <select id="login-role">
+                        <option value="admin" id="opt-admin">Admin Portal</option>
+                        <option value="doctor" id="opt-doctor">Doctor Portal</option>
+                        <option value="receptionist" id="opt-reception">Receptionist / Queue</option>
+                        <option value="pharmacist" id="opt-pharma">Pharmacist (E-Commerce)</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label id="lbl-username">Username</label>
+                    <input type="text" id="login-user" placeholder="Enter username">
+                </div>
+                <div class="form-group">
+                    <label id="lbl-password">Password</label>
+                    <input type="password" id="login-pass" placeholder="Enter password">
+                </div>
+                <button class="login-btn" onclick="handleLogin()" id="btn-login-text">Login to Portal</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="app-container">
+        <aside>
+            <div class="logo-area">🏥 Hospital ERP</div>
+            <ul class="nav-links" id="sidebar-nav"></ul>
+        </aside>
+
+        <main>
+            <header>
+                <h1 id="page-title">Dashboard Overview</h1>
+                <div class="header-controls">
+                    <select id="lang-switcher" onchange="switchLanguage(this.value)" style="padding: 5px; border-radius: 4px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color);">
+                        <option value="en">English</option>
+                        <option value="si">සිංහල</option>
+                    </select>
+                    <button class="icon-btn" onclick="toggleTheme()" title="Toggle Theme">🌓</button>
+                </div>
+                <div class="user-profile">
+                    <span id="role-display-label">Admin Panel</span>
+                    <button class="logout-btn" onclick="handleLogout()" id="btn-logout">Logout</button>
+                </div>
+            </header>
+
+            <div class="content-body">
+                
+                <div id="dashboard" class="tab-content active">
+                    <div class="dashboard-welcome">
+                        <h2 id="dash-title">Admin Control Center</h2>
+                        <p id="dash-desc">Welcome back! Comprehensive hospital statistics and live analytics.</p>
+                    </div>
+
+                    <div id="low-stock-alert" class="alert-banner">
+                        ⚠️ Warning: Some pharmacy medicines are running low on stock (&lt; 10 items)!
+                    </div>
+
+                    <div class="dashboard-cards">
+                        <div class="stat-card"><div class="stat-header"><h3 id="stat-lbl-patients">Total Patients</h3><span>👤</span></div><p id="stat-patients">0</p></div>
+                        <div class="stat-card"><div class="stat-header"><h3 id="stat-lbl-appts">Appointments</h3><span>📅</span></div><p id="stat-appointments">0</p></div>
+                        <div class="stat-card"><div class="stat-header"><h3 id="stat-lbl-meds">Pharmacy Stock</h3><span>💊</span></div><p id="stat-medicines">0</p></div>
+                        <div class="stat-card"><div class="stat-header"><h3 id="stat-lbl-earn">Total Earnings</h3><span>💰</span></div><p id="stat-earnings">Rs. 0.00</p></div>
+                    </div>
+
+                    <div style="display: flex; gap: 20px; margin-top: 30px; flex-wrap: wrap;">
+                        <div class="card" style="flex: 1; min-width: 300px; margin-bottom: 0;">
+                            <h2 id="chart-lbl-1">Hospital Metrics Overview</h2>
+                            <canvas id="barChart" style="max-height: 250px;"></canvas>
+                        </div>
+                        <div class="card" style="flex: 1; min-width: 300px; margin-bottom: 0;">
+                            <h2 id="chart-lbl-2">Financial Revenue Breakdown</h2>
+                            <canvas id="pieChart" style="max-height: 250px;"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="doctor-dashboard" class="tab-content">
+                    <div class="dashboard-welcome">
+                        <h2 id="doc-dash-title">Doctor Portal & EHR</h2>
+                        <p id="doc-dash-desc">Manage appointments, write digital prescriptions, and analyze patient vital records.</p>
+                    </div>
+
+                    <div class="card">
+                        <h2 id="presc-title">📝 Digital Prescription Builder</h2>
+                        <div class="form-group"><label id="presc-lbl-pat">Patient Name</label><input type="text" id="presc-patient" placeholder="Enter patient name"></div>
+                        <div class="form-group"><label id="presc-lbl-diag">Diagnosis / Notes</label><textarea id="presc-diag" rows="2" placeholder="Enter diagnosis notes..."></textarea></div>
+                        <div class="form-group"><label id="presc-lbl-meds">Prescribed Medicines & Dosage</label><textarea id="presc-details" rows="3" placeholder="e.g., Panadol 500mg - 1 tid"></textarea></div>
+                        <button class="btn-primary" onclick="generatePrescription()" id="presc-btn">Generate & Print Prescription</button>
+                    </div>
+
+                    <div class="card">
+                        <h2 id="ehr-title">📈 Patient EHR Vital Trends (Blood Pressure & Sugar)</h2>
+                        <canvas id="ehrChart" style="max-height: 220px;"></canvas>
+                    </div>
+
+                    <div class="card">
+                        <h2 id="doc-card-1">My Assigned Appointments & Actions</h2>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th id="th-doc-id">ID</th>
+                                    <th id="th-doc-pat">Patient Name</th>
+                                    <th id="th-doc-doc">Doctor Name</th>
+                                    <th id="th-doc-date">Date & Time</th>
+                                    <th id="th-doc-status">Status</th>
+                                    <th id="th-doc-actions">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="doc-appointments-table-body"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div id="calendar" class="tab-content">
+                    <div class="card">
+                        <h2 id="sched-title">📅 Doctor Shifts & Availability Calendar</h2>
+                        <div class="form-group"><label id="sched-lbl-doc">Doctor Name</label><input type="text" id="sched-doc" placeholder="e.g., Dr. Perera"></div>
+                        <div class="form-group"><label id="sched-lbl-dept">Department</label><input type="text" id="sched-dept" placeholder="e.g., Cardiology"></div>
+                        <div class="form-group"><label id="sched-lbl-days">Available Days</label><input type="text" id="sched-days" placeholder="e.g., Mon, Wed, Fri"></div>
+                        <div class="form-group"><label id="sched-lbl-time">Shift Time</label><input type="text" id="sched-time" placeholder="e.g., 08:00 AM - 01:00 PM"></div>
+                        <button class="btn-primary" onclick="saveSchedule()" id="sched-btn">Add Shift Schedule</button>
+                    </div>
+                    <div class="card">
+                        <h2 id="roster-title">Hospital Duty Roster</h2>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th id="th-ros-id">ID</th>
+                                    <th id="th-ros-doc">Doctor Name</th>
+                                    <th id="th-ros-dept">Department</th>
+                                    <th id="th-ros-days">Available Days</th>
+                                    <th id="th-ros-time">Shift Time</th>
+                                </tr>
+                            </thead>
+                            <tbody id="schedule-table-body"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div id="pharmacist" class="tab-content">
+                    <div class="card">
+                        <h2 id="cart-title">🛒 Pharmacy E-Commerce / Quick Order Cart</h2>
+                        <div class="form-group"><label id="cart-lbl-pat">Patient Name</label><input type="text" id="cart-patient" placeholder="Enter patient name"></div>
+                        <div class="form-group"><label id="cart-lbl-sel">Select Medicine</label><select id="cart-med-select"><option value="">-- Choose Medicine --</option></select></div>
+                        <div class="form-group"><label id="cart-lbl-qty">Quantity</label><input type="number" id="cart-qty" value="1" min="1"></div>
+                        <button class="btn-primary" onclick="addToCart()" id="cart-add-btn">Add to Order Cart</button>
+                    </div>
+                    <div class="card">
+                        <h2 id="cart-sum-title">Active Pharmacy Cart Summary</h2>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th id="th-cart-med">Medicine Name</th>
+                                    <th id="th-cart-qty">Qty</th>
+                                    <th id="th-cart-price">Price</th>
+                                    <th id="th-cart-total">Total</th>
+                                </tr>
+                            </thead>
+                            <tbody id="cart-table-body"></tbody>
+                        </table>
+                        <h3 id="cart-total-display" style="margin-top: 15px; text-align: right;">Total Amount: Rs. 0.00</h3>
+                        <button class="btn-success" style="margin-top: 15px; padding: 10px 20px;" onclick="checkoutCart()" id="checkout-btn">Checkout & Generate Invoice</button>
+                    </div>
+                </div>
+
+                <div id="patients" class="tab-content">
+                    <div class="card">
+                        <h2 id="pat-reg-title">Register New Patient</h2>
+                        <div class="form-group"><label id="pat-lbl-name">Full Name</label><input type="text" id="patient-name" placeholder="Enter patient name"></div>
+                        <div class="form-group"><label id="pat-lbl-age">Age</label><input type="number" id="patient-age" placeholder="Enter age"></div>
+                        <div class="form-group"><label id="pat-lbl-contact">Contact Number</label><input type="text" id="patient-contact" placeholder="Enter phone number"></div>
+                        <button class="btn-primary" onclick="savePatient()" id="pat-btn-save">Save Patient</button>
+                    </div>
+                    <div class="card">
+                        <h2 id="pat-list-title">Registered Patients List</h2>
+                        <button class="btn-excel" onclick="exportTableToCSV('patients-table-body', 'patients_report.csv')" id="btn-exp-pat">📥 Export to CSV</button>
+                        <input type="text" id="search-patients" class="search-box" placeholder="🔍 Search Patients..." onkeyup="filterTable('search-patients', 'patients-table-body')">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th id="th-pat-id">ID</th>
+                                    <th id="th-pat-name">Name</th>
+                                    <th id="th-pat-age">Age</th>
+                                    <th id="th-pat-contact">Contact</th>
+                                    <th id="th-pat-actions">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="patients-table-body"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div id="appointments" class="tab-content">
+                    <div class="card">
+                        <h2 id="appt-sch-title">Schedule Appointment & Token</h2>
+                        <div class="form-group"><label id="appt-lbl-pat">Patient Name</label><input type="text" id="appointment-patient" placeholder="Enter patient name"></div>
+                        <div class="form-group"><label id="appt-lbl-doc">Doctor Name</label><input type="text" id="appointment-doctor" placeholder="Enter doctor name"></div>
+                        <div class="form-group"><label id="appt-lbl-date">Date & Time</label><input type="datetime-local" id="appointment-date"></div>
+                        <button class="btn-primary" onclick="saveAppointment()" id="appt-btn-book">Book Appointment & Assign Token</button>
+                    </div>
+                    <div class="card">
+                        <h2 id="appt-list-title">Scheduled Appointments List</h2>
+                        <input type="text" id="search-appointments" class="search-box" placeholder="🔍 Search Appointments..." onkeyup="filterTable('search-appointments', 'appointments-table-body')">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th id="th-appt-token">Token</th>
+                                    <th id="th-appt-pat">Patient Name</th>
+                                    <th id="th-appt-doc">Doctor Name</th>
+                                    <th id="th-appt-date">Date & Time</th>
+                                    <th id="th-appt-status">Status</th>
+                                    <th id="th-appt-actions">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="appointments-table-body"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div id="pharmacy" class="tab-content">
+                    <div class="card">
+                        <h2 id="pharm-add-title">Add New Medicine</h2>
+                        <div class="form-group"><label id="pharm-lbl-name">Medicine Name</label><input type="text" id="med-name" placeholder="Enter medicine name"></div>
+                        <div class="form-group"><label id="pharm-lbl-qty">Quantity</label><input type="number" id="med-qty" placeholder="Enter stock quantity"></div>
+                        <div class="form-group"><label id="pharm-lbl-price">Price (Rs.)</label><input type="number" step="0.01" id="med-price" placeholder="Enter unit price"></div>
+                        <button class="btn-primary" onclick="saveMedicine()" id="pharm-btn-add">Add Medicine</button>
+                    </div>
+                    <div class="card">
+                        <h2 id="pharm-list-title">Pharmacy Inventory List</h2>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th id="th-inv-id">ID</th>
+                                    <th id="th-inv-name">Medicine Name</th>
+                                    <th id="th-inv-qty">Quantity</th>
+                                    <th id="th-inv-price">Price (Rs.)</th>
+                                    <th id="th-inv-actions">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="pharmacy-table-body"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div id="billing" class="tab-content">
+                    <div class="card">
+                        <h2 id="bill-gen-title">Generate Patient Bill</h2>
+                        <div class="form-group"><label id="bill-lbl-pat">Patient Name</label><input type="text" id="bill-patient" placeholder="Enter patient name"></div>
+                        <div class="form-group"><label id="bill-lbl-amt">Amount (Rs.)</label><input type="number" step="0.01" id="bill-amount" placeholder="Enter total amount"></div>
+                        <div class="form-group"><label id="bill-lbl-stat">Payment Status</label><select id="bill-status"><option value="Paid">Paid</option><option value="Pending">Pending</option></select></div>
+                        <button class="btn-primary" onclick="saveBill()" id="bill-btn-gen">Generate Bill</button>
+                    </div>
+                    <div class="card">
+                        <h2 id="bill-list-title">Billing & Invoices List</h2>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th id="th-bill-id">ID</th>
+                                    <th id="th-bill-pat">Patient Name</th>
+                                    <th id="th-bill-amt">Amount (Rs.)</th>
+                                    <th id="th-bill-stat">Status</th>
+                                    <th id="th-bill-actions">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="billing-table-body"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div id="laboratory" class="tab-content">
+                    <div class="card">
+                        <h2 id="lab-add-title">Add Laboratory Test Report</h2>
+                        <div class="form-group"><label id="lab-lbl-pat">Patient Name</label><input type="text" id="lab-patient" placeholder="Enter patient name"></div>
+                        <div class="form-group"><label id="lab-lbl-test">Test Name</label><input type="text" id="lab-test" placeholder="Enter test name"></div>
+                        <div class="form-group"><label id="lab-lbl-res">Result</label><input type="text" id="lab-result" placeholder="Enter test result"></div>
+                        <button class="btn-primary" onclick="saveLabReport()" id="lab-btn-save">Save Lab Report</button>
+                    </div>
+                    <div class="card">
+                        <h2 id="lab-list-title">Laboratory Test Reports List</h2>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th id="th-lab-id">ID</th>
+                                    <th id="th-lab-pat">Patient Name</th>
+                                    <th id="th-lab-test">Test Name</th>
+                                    <th id="th-lab-res">Result</th>
+                                </tr>
+                            </thead>
+                            <tbody id="laboratory-table-body"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+            </div>
+        </main>
+    </div>
+
+    <script>
+        let currentRole = 'admin';
+        let currentLang = 'en';
+        let cartItems = [];
+        let barChartInstance = null;
+        let pieChartInstance = null;
+        let ehrChartInstance = null;
+
+        function showToast(msg) {
+            const toast = document.getElementById('toast-notification');
+            toast.innerText = msg;
+            toast.style.display = 'block';
+            setTimeout(() => { toast.style.display = 'none'; }, 3500);
+        }
+
+        function toggleTheme() {
+            const body = document.body;
+            body.setAttribute('data-theme', body.getAttribute('data-theme') === 'light' ? 'dark' : 'light');
+        }
+
+        // --- BILINGUAL TRANSLATOR SWITCHER ---
+        function switchLanguage(lang) {
+            currentLang = lang;
+            
+            // Sync both dropdowns
+            document.getElementById('lang-switcher').value = lang;
+            document.getElementById('login-lang-switcher').value = lang;
+
+            const t = {
+                en: {
+                    loginTitle: "Enterprise Healthcare ERP", loginDesc: "Multi-role advanced hospital management & clinical system.",
+                    welcome: "Welcome Back", sub: "Please sign in to continue", role: "Select Role", user: "Username", pass: "Password", btn: "Login to Portal", logout: "Logout",
+                    optAdmin: "Admin Portal", optDoctor: "Doctor Portal", optReception: "Receptionist / Queue", optPharma: "Pharmacist (E-Commerce)",
+                    dashTitle: "Admin Control Center", dashDesc: "Welcome back! Comprehensive hospital statistics and live analytics.",
+                    stat1: "Total Patients", stat2: "Appointments", stat3: "Pharmacy Stock", stat4: "Total Earnings",
+                    chart1: "Hospital Metrics Overview", chart2: "Financial Revenue Breakdown",
+                    docTitle: "Doctor Portal & EHR", docDesc: "Manage appointments, write digital prescriptions, and analyze patient vital records.",
+                    docCard1: "My Assigned Appointments & Actions",
+                    prescTitle: "📝 Digital Prescription Builder", prescPat: "Patient Name", prescDiag: "Diagnosis / Notes", prescMeds: "Prescribed Medicines & Dosage", prescBtn: "Generate & Print Prescription",
+                    ehrTitle: "📈 Patient EHR Vital Trends (Blood Pressure & Sugar)",
+                    schedTitle: "📅 Doctor Shifts & Availability Calendar", schedDoc: "Doctor Name", schedDept: "Department", schedDays: "Available Days", schedTime: "Shift Time", schedBtn: "Add Shift Schedule", rosterTitle: "Hospital Duty Roster",
+                    cartTitle: "🛒 Pharmacy E-Commerce / Quick Order Cart", cartPat: "Patient Name", cartSel: "Select Medicine", cartQty: "Quantity", cartAddBtn: "Add to Order Cart", cartSumTitle: "Active Pharmacy Cart Summary", checkoutBtn: "Checkout & Generate Invoice",
+                    patReg: "Register New Patient", patName: "Full Name", patAge: "Age", patContact: "Contact Number", patBtn: "Save Patient", patList: "Registered Patients List",
+                    apptSch: "Schedule Appointment & Token", apptPat: "Patient Name", apptDoc: "Doctor Name", apptDate: "Date & Time", apptBtn: "Book Appointment & Assign Token", apptList: "Scheduled Appointments List",
+                    pharmAdd: "Add New Medicine", pharmName: "Medicine Name", pharmQty: "Quantity", pharmPrice: "Price (Rs.)", pharmBtn: "Add Medicine", pharmList: "Pharmacy Inventory List",
+                    billGen: "Generate Patient Bill", billAmt: "Amount (Rs.)", billStat: "Payment Status", billBtn: "Generate Bill", billList: "Billing & Invoices List",
+                    labAdd: "Add Laboratory Test Report", labTest: "Test Name", labRes: "Result", labBtn: "Save Lab Report", labList: "Laboratory Test Reports List",
+                    expCsv: "📥 Export to CSV",
+                    thId: "ID", thName: "Name", thAge: "Age", thContact: "Contact", thActions: "Actions",
+                    thPatName: "Patient Name", thDocName: "Doctor Name", thDateTime: "Date & Time", thStatus: "Status",
+                    thToken: "Token", thMedName: "Medicine Name", thQty: "Qty", thPrice: "Price", thTotal: "Total",
+                    thDept: "Department", thAvailDays: "Available Days", thShiftTime: "Shift Time",
+                    thTestName: "Test Name", thResult: "Result"
+                },
+                si: {
+                    loginTitle: "ව්‍යවසාය සෞඛ්‍ය ERP (Healthcare ERP)", loginDesc: "බහු-භූමිකා උසස් රෝහල් කළමනාකරණ සහ සායනික පද්ධතිය.",
+                    welcome: "සාදරයෙන් පිළිගනිමු", sub: "ඉදිරියට යාමට කරුණාකර ඇතුළු වන්න", role: "භූමිකාව තෝරන්න", user: "පරිශීලක නාමය", pass: "මුරපදය", btn: "පද්ධතියට පිවිසෙන්න", logout: "පිටවීම",
+                    optAdmin: "පරිපාලක ද්වාරය (Admin)", optDoctor: "වෛද්‍ය ද්වාරය (Doctor)", optReception: "ප්‍රතිග්‍රাহක / පෝලිම", optPharma: "ඖෂධවේදී (E-Commerce)",
+                    dashTitle: "පරිපාලක පාලන මධ්‍යස්ථානය", dashDesc: "සාදරයෙන් පිළිගනිමු! රෝහල් දත්ත සහ සජීවී විශ්্লেෂණ.",
+                    stat1: "මුළු රෝගීන්", stat2: "වෙන් කරවාගැනීම්", stat3: "බෙහෙත් තොගය", stat4: "මුළු ආදායම",
+                    chart1: "රෝහල් දත්ත සාරාංශය", chart2: "මූල්‍ය ආදායම් බෙදීයාම",
+                    docTitle: "වෛද්‍ය ද්වාරය සහ EHR", docDesc: "වෙන්කිරීම් කළමනාකරණය කර, ඩිජිටල් බෙහෙත් වට්ටෝරු සකස් කරන්න.",
+                    docCard1: "මට වෙන්වූ වෙන්කිරීම් සහ ක්‍රියාකාරකම්",
+                    prescTitle: "📝 ඩිජිටල් බෙහෙත් වට්ටෝරු සකස්කරු", prescPat: "රෝගියාගේ නම", prescDiag: "රෝග විනිශ්චය / සටහන්", prescMeds: "නියම කළ බෙහෙත් සහ මාත්‍රාව", prescBtn: "වට්ටෝරුව සාදා මුද්‍රණය කරන්න",
+                    ehrTitle: "📈 රෝගී EHR රුධිර පීඩන සහ සීනි ප්‍රවණතා",
+                    schedTitle: "📅 වෛද්‍යවරුන්ගේ සේවා කාල සටහන", schedDoc: "වෛද්‍යවරයාගේ නම", schedDept: "අංශය", schedDays: "ලබාගත හැකි දින", schedTime: "වේලාව", schedBtn: "කාල සටහන එකතු කරන්න", rosterTitle: "රෝහල් සේවා ලැයිස්තුව",
+                    cartTitle: "🛒 ඖෂධ ඔන්ලයින් ඇණවුම් කරත්තය (Cart)", cartPat: "රෝගියාගේ නම", cartSel: "බෙහෙත තෝරන්න", cartQty: "ප්‍රමාණය", cartAddBtn: "කරත්තයට එකතු කරන්න", cartSumTitle: "සක්‍රීය ඖෂධ ඇණවුම් සාරාංශය", checkoutBtn: "බිල්පත සාදා ඉන්වොයිසිය නිකුත් කරන්න",
+                    patReg: "නව රෝගියෙක් ලියාපදිංචි කිරීම", patName: "සම්පූර්ණ නම", patAge: "වයස", patContact: "දුරකථන අංකය", patBtn: "රෝගියා සුරකින්න", patList: "ලියාපදිංචි රෝගීන් ලැයිස්තුව",
+                    apptSch: "වෙන්කිරීමක් සැලසුම් කිරීම සහ Token ලබාදීම", apptPat: "රෝගියාගේ නම", apptDoc: "වෛද්‍යවරයාගේ නම", apptDate: "දිනය සහ වෙලාව", apptBtn: "වෙන්කිරීම තහවුරු කර Token සාදන්න", apptList: "වෙන්කිරීම් ලැයිස්තුව",
+                    pharmAdd: "නව ඖෂධයක් එකතු කිරීම", pharmName: "බෙහෙතේ නම", pharmQty: "ප්‍රමාණය", pharmPrice: "මිල (රු.)", pharmBtn: "බෙහෙත එකතු කරන්න", pharmList: "බෙහෙත් තොග ලැයිස්තුව",
+                    billGen: "රෝගී බිල්පතක් සකස් කිරීම", billAmt: "මුදල (රු.)", billStat: "ගෙවීම් තත්ත්වය", billBtn: "බිල්පත සාදන්න", billList: "බිල්පත් ලැයිස්තුව",
+                    labAdd: "රසායනාගාර වාර්තාවක් එකතු කිරීම", labTest: "පරීක්ෂණ නම", labRes: "ප්‍රතිඵලය", labBtn: "වාර්තාව සුරකින්න", labList: "රසායනාගාර වාර්තා ලැයිස්තුව",
+                    expCsv: "📥 CSV ලෙස ලබාගැනීමට",
+                    thId: "අංකය", thName: "නම", thAge: "වයස", thContact: "දුරකථන අංකය", thActions: "ක්‍රියාකාරකම්",
+                    thPatName: "රෝගියාගේ නම", thDocName: "වෛද්‍යවරයාගේ නම", thDateTime: "දිනය සහ වෙලාව", thStatus: "තත්ත්වය",
+                    thToken: "ටෝකන්", thMedName: "බෙහෙතේ නම", thQty: "ප්‍රමාණය", thPrice: "මිල", thTotal: "එකතුව",
+                    thDept: "අංශය", thAvailDays: "ලබාගත හැකි දින", thShiftTime: "සේවා කාලය",
+                    thTestName: "පරීක්ෂණ නම", thResult: "ප්‍රතිඵලය"
+                }
+            };
+
+            const l = t[lang];
+            document.getElementById('txt-login-title').innerText = l.loginTitle;
+            document.getElementById('txt-login-desc').innerText = l.loginDesc;
+            document.getElementById('txt-welcome').innerText = l.welcome;
+            document.getElementById('txt-signin-sub').innerText = l.sub;
+            document.getElementById('lbl-select-role').innerText = l.role;
+            document.getElementById('opt-admin').innerText = l.optAdmin;
+            document.getElementById('opt-doctor').innerText = l.optDoctor;
+            document.getElementById('opt-reception').innerText = l.optReception;
+            document.getElementById('opt-pharma').innerText = l.optPharma;
+            document.getElementById('lbl-username').innerText = l.user;
+            document.getElementById('lbl-password').innerText = l.pass;
+            document.getElementById('btn-login-text').innerText = l.btn;
+            document.getElementById('btn-logout').innerText = l.logout;
+            document.getElementById('dash-title').innerText = l.dashTitle;
+            document.getElementById('dash-desc').innerText = l.dashDesc;
+            document.getElementById('stat-lbl-patients').innerText = l.stat1;
+            document.getElementById('stat-lbl-appts').innerText = l.stat2;
+            document.getElementById('stat-lbl-meds').innerText = l.stat3;
+            document.getElementById('stat-lbl-earn').innerText = l.stat4;
+            document.getElementById('chart-lbl-1').innerText = l.chart1;
+            document.getElementById('chart-lbl-2').innerText = l.chart2;
+            document.getElementById('doc-dash-title').innerText = l.docTitle;
+            document.getElementById('doc-dash-desc').innerText = l.docDesc;
+            document.getElementById('doc-card-1').innerText = l.docCard1;
+            document.getElementById('presc-title').innerText = l.prescTitle;
+            document.getElementById('presc-lbl-pat').innerText = l.prescPat;
+            document.getElementById('presc-lbl-diag').innerText = l.prescDiag;
+            document.getElementById('presc-lbl-meds').innerText = l.prescMeds;
+            document.getElementById('presc-btn').innerText = l.prescBtn;
+            document.getElementById('ehr-title').innerText = l.ehrTitle;
+            
+            document.getElementById('sched-title').innerText = l.schedTitle;
+            document.getElementById('sched-lbl-doc').innerText = l.schedDoc;
+            document.getElementById('sched-lbl-dept').innerText = l.schedDept;
+            document.getElementById('sched-lbl-days').innerText = l.schedDays;
+            document.getElementById('sched-lbl-time').innerText = l.schedTime;
+            document.getElementById('sched-btn').innerText = l.schedBtn;
+            document.getElementById('roster-title').innerText = l.rosterTitle;
+
+            document.getElementById('cart-title').innerText = l.cartTitle;
+            document.getElementById('cart-lbl-pat').innerText = l.cartPat;
+            document.getElementById('cart-lbl-sel').innerText = l.cartSel;
+            document.getElementById('cart-lbl-qty').innerText = l.cartQty;
+            document.getElementById('cart-add-btn').innerText = l.cartAddBtn;
+            document.getElementById('cart-sum-title').innerText = l.cartSumTitle;
+            document.getElementById('checkout-btn').innerText = l.checkoutBtn;
+            
+            document.getElementById('pat-reg-title').innerText = l.patReg;
+            document.getElementById('pat-lbl-name').innerText = l.patName;
+            document.getElementById('pat-lbl-age').innerText = l.patAge;
+            document.getElementById('pat-lbl-contact').innerText = l.patContact;
+            document.getElementById('pat-btn-save').innerText = l.patBtn;
+            document.getElementById('pat-list-title').innerText = l.patList;
+            document.getElementById('btn-exp-pat').innerText = l.expCsv;
+
+            document.getElementById('appt-sch-title').innerText = l.apptSch;
+            document.getElementById('appt-lbl-pat').innerText = l.apptPat;
+            document.getElementById('appt-lbl-doc').innerText = l.apptDoc;
+            document.getElementById('appt-lbl-date').innerText = l.apptDate;
+            document.getElementById('appt-btn-book').innerText = l.apptBtn;
+            document.getElementById('appt-list-title').innerText = l.apptList;
+
+            document.getElementById('pharm-add-title').innerText = l.pharmAdd;
+            document.getElementById('pharm-lbl-name').innerText = l.pharmName;
+            document.getElementById('pharm-lbl-qty').innerText = l.pharmQty;
+            document.getElementById('pharm-lbl-price').innerText = l.pharmPrice;
+            document.getElementById('pharm-btn-add').innerText = l.pharmBtn;
+            document.getElementById('pharm-list-title').innerText = l.pharmList;
+
+            document.getElementById('bill-gen-title').innerText = l.billGen;
+            document.getElementById('bill-lbl-pat').innerText = l.apptPat;
+            document.getElementById('bill-lbl-amt').innerText = l.billAmt;
+            document.getElementById('bill-lbl-stat').innerText = l.billStat;
+            document.getElementById('bill-btn-gen').innerText = l.billBtn;
+            document.getElementById('bill-list-title').innerText = l.billList;
+
+            document.getElementById('lab-add-title').innerText = l.labAdd;
+            document.getElementById('lab-lbl-pat').innerText = l.apptPat;
+            document.getElementById('lab-lbl-test').innerText = l.labTest;
+            document.getElementById('lab-lbl-res').innerText = l.labRes;
+            document.getElementById('lab-btn-save').innerText = l.labBtn;
+            document.getElementById('lab-list-title').innerText = l.labList;
+
+            // Translate Table Headers dynamically
+            document.getElementById('th-doc-id').innerText = l.thId;
+            document.getElementById('th-doc-pat').innerText = l.thPatName;
+            document.getElementById('th-doc-doc').innerText = l.thDocName;
+            document.getElementById('th-doc-date').innerText = l.thDateTime;
+            document.getElementById('th-doc-status').innerText = l.thStatus;
+            document.getElementById('th-doc-actions').innerText = l.thActions;
+
+            document.getElementById('th-ros-id').innerText = l.thId;
+            document.getElementById('th-ros-doc').innerText = l.thDocName;
+            document.getElementById('th-ros-dept').innerText = l.thDept;
+            document.getElementById('th-ros-days').innerText = l.thAvailDays;
+            document.getElementById('th-ros-time').innerText = l.thShiftTime;
+
+            document.getElementById('th-cart-med').innerText = l.thMedName;
+            document.getElementById('th-cart-qty').innerText = l.thQty;
+            document.getElementById('th-cart-price').innerText = l.thPrice;
+            document.getElementById('th-cart-total').innerText = l.thTotal;
+
+            document.getElementById('th-pat-id').innerText = l.thId;
+            document.getElementById('th-pat-name').innerText = l.thName;
+            document.getElementById('th-pat-age').innerText = l.thAge;
+            document.getElementById('th-pat-contact').innerText = l.thContact;
+            document.getElementById('th-pat-actions').innerText = l.thActions;
+
+            document.getElementById('th-appt-token').innerText = l.thToken;
+            document.getElementById('th-appt-pat').innerText = l.thPatName;
+            document.getElementById('th-appt-doc').innerText = l.thDocName;
+            document.getElementById('th-appt-date').innerText = l.thDateTime;
+            document.getElementById('th-appt-status').innerText = l.thStatus;
+            document.getElementById('th-appt-actions').innerText = l.thActions;
+
+            document.getElementById('th-inv-id').innerText = l.thId;
+            document.getElementById('th-inv-name').innerText = l.thMedName;
+            document.getElementById('th-inv-qty').innerText = l.thQty;
+            document.getElementById('th-inv-price').innerText = l.thPrice;
+            document.getElementById('th-inv-actions').innerText = l.thActions;
+
+            document.getElementById('th-bill-id').innerText = l.thId;
+            document.getElementById('th-bill-pat').innerText = l.thPatName;
+            document.getElementById('th-bill-amt').innerText = l.thPrice;
+            document.getElementById('th-bill-stat').innerText = l.thStatus;
+            document.getElementById('th-bill-actions').innerText = l.thActions;
+
+            document.getElementById('th-lab-id').innerText = l.thId;
+            document.getElementById('th-lab-pat').innerText = l.thPatName;
+            document.getElementById('th-lab-test').innerText = l.thTestName;
+            document.getElementById('th-lab-res').innerText = l.thResult;
+
+            setupSidebarNav();
+        }
+
+        async function handleLogin() {
+            const role = document.getElementById('login-role').value;
+            const user = document.getElementById('login-user').value;
+            const pass = document.getElementById('login-pass').value;
+
+            if(!user || !pass) { alert('Please enter username and password!'); return; }
+
+            try {
+                const response = await fetch('/api/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username: user, password: pass })
+                });
+                const data = await response.json();
+                if(data.status === 'success') {
+                    currentRole = data.role;
+                } else {
+                    currentRole = role;
+                }
+            } catch(e) {
+                currentRole = role;
+            }
+
+            document.getElementById('login-container').style.display = 'none';
+            document.getElementById('app-container').style.display = 'flex';
+            setupSidebarNav();
+
+            if(currentRole === 'admin') {
+                switchTab('dashboard', document.querySelector('.nav-links li'));
+                fetchDashboardSummary(); fetchPatients(); fetchAppointments(); fetchPharmacy(); fetchBilling(); fetchLaboratory();
+            } else if(currentRole === 'doctor') {
+                switchTab('doctor-dashboard', document.querySelector('.nav-links li'));
+                fetchDoctorAppointments(); fetchEHRChart();
+            } else if(currentRole === 'receptionist') {
+                switchTab('appointments', document.querySelector('.nav-links li'));
+                fetchAppointments();
+            } else if(currentRole === 'pharmacist') {
+                switchTab('pharmacist', document.querySelector('.nav-links li'));
+                loadCartMedicines();
+            }
+        }
+
+        function setupSidebarNav() {
+            const nav = document.getElementById('sidebar-nav');
+            nav.innerHTML = '';
+            if(currentRole === 'admin') {
+                nav.innerHTML = currentLang === 'si' ? `
+                    <li class="active" onclick="switchTab('dashboard', this)">📊 පාලන පුවරුව</li>
+                    <li onclick="switchTab('patients', this)">👤 රෝගීන්</li>
+                    <li onclick="switchTab('appointments', this)">📅 වෙන්කිරීම් සහ ටෝකන්</li>
+                    <li onclick="switchTab('calendar', this)">📅 වෛද්‍ය මාරු</li>
+                    <li onclick="switchTab('pharmacy', this)">💊 ඖෂධ තොගය</li>
+                    <li onclick="switchTab('billing', this)">💰 බිල්පත්</li>
+                    <li onclick="switchTab('laboratory', this)">🔬 පරීක්ෂණ</li>
+                ` : `
+                    <li class="active" onclick="switchTab('dashboard', this)">📊 Dashboard</li>
+                    <li onclick="switchTab('patients', this)">👤 Patients</li>
+                    <li onclick="switchTab('appointments', this)">📅 Appointments & Queue</li>
+                    <li onclick="switchTab('calendar', this)">📅 Doctor Shifts</li>
+                    <li onclick="switchTab('pharmacy', this)">💊 Pharmacy Stock</li>
+                    <li onclick="switchTab('billing', this)">💰 Billing</li>
+                    <li onclick="switchTab('laboratory', this)">🔬 Laboratory</li>
+                `;
+            } else if(currentRole === 'doctor') {
+                nav.innerHTML = currentLang === 'si' ? `
+                    <li class="active" onclick="switchTab('doctor-dashboard', this)">🩺 වෛද්‍ය පුවරුව සහ EHR</li>
+                    <li onclick="switchTab('calendar', this)">📅 මාරු ලැයිස්තුව</li>
+                ` : `
+                    <li class="active" onclick="switchTab('doctor-dashboard', this)">🩺 Doctor Portal & EHR</li>
+                    <li onclick="switchTab('calendar', this)">📅 Shift Roster</li>
+                `;
+            } else if(currentRole === 'receptionist') {
+                nav.innerHTML = currentLang === 'si' ? `
+                    <li class="active" onclick="switchTab('appointments', this)">📅 ටෝකන් පෝලිම</li>
+                    <li onclick="switchTab('patients', this)">👤 රෝගී ලියාපදිංචිය</li>
+                ` : `
+                    <li class="active" onclick="switchTab('appointments', this)">📅 Token Queue & Appointments</li>
+                    <li onclick="switchTab('patients', this)">👤 Patient Registration</li>
+                `;
+            } else if(currentRole === 'pharmacist') {
+                nav.innerHTML = currentLang === 'si' ? `
+                    <li class="active" onclick="switchTab('pharmacist', this)">🛒 ඖෂධ ඇණවුම් කරත්තය</li>
+                    <li onclick="switchTab('pharmacy', this)">💊 තොග කළමනාකරණය</li>
+                ` : `
+                    <li class="active" onclick="switchTab('pharmacist', this)">🛒 Pharmacy E-Commerce Cart</li>
+                    <li onclick="switchTab('pharmacy', this)">💊 Inventory Stock</li>
+                `;
+            }
+        }
+
+        function handleLogout() {
+            document.getElementById('app-container').style.display = 'none';
+            document.getElementById('login-container').style.display = 'flex';
+            document.getElementById('login-user').value = ''; document.getElementById('login-pass').value = '';
+        }
+
+        function switchTab(tabId, element) {
+            document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.nav-links li').forEach(li => li.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active');
+            if(element) element.classList.add('active');
+            
+            if(tabId === 'dashboard') fetchDashboardSummary();
+            if(tabId === 'doctor-dashboard') { fetchDoctorAppointments(); fetchEHRChart(); }
+            if(tabId === 'calendar') fetchSchedules();
+            if(tabId === 'pharmacist') loadCartMedicines();
+        }
+
+        async function fetchEHRChart() {
+            const ctx = document.getElementById('ehrChart').getContext('2d');
+            if(ehrChartInstance) ehrChartInstance.destroy();
+            ehrChartInstance = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4', 'Today'],
+                    datasets: [
+                        { label: 'Systolic BP (mmHg)', data: [130, 125, 128, 120, 118], borderColor: '#2563eb', tension: 0.3, fill: false },
+                        { label: 'Blood Sugar (mg/dL)', data: [140, 135, 130, 125, 122], borderColor: '#10b981', tension: 0.3, fill: false }
+                    ]
+                },
+                options: { responsive: true }
+            });
+        }
+
+        async function fetchSchedules() {
+            try {
+                const res = await fetch('/api/schedules');
+                const data = await res.json();
+                const tbody = document.getElementById('schedule-table-body');
+                tbody.innerHTML = '';
+                data.forEach(s => {
+                    tbody.innerHTML += `<tr><td>${s.id}</td><td>${s.doctor_name}</td><td>${s.department}</td><td>${s.available_days}</td><td>${s.shift_time}</td></tr>`;
+                });
+            } catch(e) { console.error(e); }
+        }
+
+        async function saveSchedule() {
+            const doctor_name = document.getElementById('sched-doc').value;
+            const department = document.getElementById('sched-dept').value;
+            const available_days = document.getElementById('sched-days').value;
+            const shift_time = document.getElementById('sched-time').value;
+            if(!doctor_name || !department) return alert('Fill required fields!');
+            
+            await fetch('/api/schedules', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ doctor_name, department, available_days, shift_time })
+            });
+            showToast('Doctor shift schedule added successfully!');
+            fetchSchedules();
+        }
+
+        async function loadCartMedicines() {
+            try {
+                const res = await fetch('/api/pharmacy');
+                const data = await res.json();
+                const select = document.getElementById('cart-med-select');
+                select.innerHTML = '<option value="">-- Choose Medicine --</option>';
+                data.forEach(m => {
+                    select.innerHTML += `<option value="${m.medicine_name}" data-price="${m.price}">${m.medicine_name} (Rs. ${m.price}) - Stock: ${m.quantity}</option>`;
+                });
+            } catch(e) { console.error(e); }
+        }
+
+        function addToCart() {
+            const select = document.getElementById('cart-med-select');
+            const medName = select.value;
+            const price = parseFloat(select.options[select.selectedIndex]?.getAttribute('data-price') || 0);
+            const qty = parseInt(document.getElementById('cart-qty').value || 1);
+            if(!medName) return alert('Select a medicine!');
+
+            cartItems.push({ name: medName, qty: qty, price: price, total: price * qty });
+            renderCart();
+            showToast('Item added to pharmacy order cart.');
+        }
+
+        function renderCart() {
+            const tbody = document.getElementById('cart-table-body');
+            tbody.innerHTML = '';
+            let total = 0;
+            cartItems.forEach(item => {
+                total += item.total;
+                tbody.innerHTML += `<tr><td>${item.name}</td><td>${item.qty}</td><td>Rs. ${item.price.toFixed(2)}</td><td>Rs. ${item.total.toFixed(2)}</td></tr>`;
+            });
+            document.getElementById('cart-total-display').innerText = `Total Amount: Rs. ${total.toFixed(2)}`;
+        }
+
+        async function checkoutCart() {
+            const patient = document.getElementById('cart-patient').value;
+            if(!patient || cartItems.length === 0) return alert('Enter patient name and add items to cart!');
+            
+            let total = cartItems.reduce((sum, item) => sum + item.total, 0);
+            await fetch('/api/billing', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ patient_name: patient, amount: total, status: 'Paid' })
+            });
+
+            showToast('Pharmacy order checked out successfully! Invoice generated.');
+            cartItems = [];
+            renderCart();
+        }
+
+        function generatePrescription() {
+            const pat = document.getElementById('presc-patient').value;
+            const diag = document.getElementById('presc-diag').value;
+            const meds = document.getElementById('presc-details').value;
+            if(!pat || !meds) return alert('Fill patient name and medicines!');
+            
+            document.getElementById('print-pat-name').innerText = pat;
+            document.getElementById('print-date').innerText = new Date().toLocaleString();
+            document.getElementById('print-diag').innerText = diag || 'None';
+            document.getElementById('print-meds').innerText = meds;
+
+            showToast('Prescription generated! Opening print preview...');
+            setTimeout(() => { window.print(); }, 800);
+        }
+
+        async function fetchDoctorAppointments() {
+            const res = await fetch('/api/appointments');
+            const data = await res.json();
+            const tbody = document.getElementById('doc-appointments-table-body');
+            tbody.innerHTML = '';
+            data.forEach(a => {
+                tbody.innerHTML += `<tr><td>${a.id}</td><td>${a.patient_name}</td><td>${a.doctor_name}</td><td>${a.appointment_date}</td><td><span class="badge badge-confirmed">${a.status}</span></td><td><button class="btn-success" onclick="updateAppt(${a.id}, 'Completed')">Complete</button></td></tr>`;
+            });
+        }
+
+        async function updateAppt(id, status) {
+            await fetch(`/api/appointments/${id}`, { method: 'PUT', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({status}) });
+            showToast('Appointment updated.');
+            fetchDoctorAppointments();
+        }
+
+        async function fetchPatients() {
+            const res = await fetch('/api/patients');
+            const data = await res.json();
+            const tbody = document.getElementById('patients-table-body');
+            tbody.innerHTML = '';
+            data.forEach(p => tbody.innerHTML += `<tr><td>${p.id}</td><td>${p.name}</td><td>${p.age}</td><td>${p.contact}</td><td><button class="btn-danger" onclick="deletePatient(${p.id})">Delete</button></td></tr>`);
+        }
+        async function savePatient() {
+            const name = document.getElementById('patient-name').value;
+            const age = document.getElementById('patient-age').value;
+            const contact = document.getElementById('patient-contact').value;
+            if(!name) return;
+            await fetch('/api/patients', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({name, age, contact}) });
+            fetchPatients(); showToast('Patient saved!');
+        }
+        async function deletePatient(id) { await fetch(`/api/patients/${id}`, {method: 'DELETE'}); fetchPatients(); }
+
+        async function fetchAppointments() {
+            const res = await fetch('/api/appointments');
+            const data = await res.json();
+            const tbody = document.getElementById('appointments-table-body');
+            tbody.innerHTML = '';
+            data.forEach(a => tbody.innerHTML += `<tr><td>${a.token_no}</td><td>${a.patient_name}</td><td>${a.doctor_name}</td><td>${a.appointment_date}</td><td><span class="badge badge-confirmed">${a.status}</span></td><td><button class="btn-danger" onclick="deleteAppt(${a.id})">Delete</button></td></tr>`);
+        }
+        async function saveAppointment() {
+            const patient_name = document.getElementById('appointment-patient').value;
+            const doctor_name = document.getElementById('appointment-doctor').value;
+            const appointment_date = document.getElementById('appointment-date').value;
+            if(!patient_name) return;
+            const res = await fetch('/api/appointments', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({patient_name, doctor_name, appointment_date, status: 'Confirmed'}) });
+            const data = await res.json();
+            showToast(`Appointment booked! Token assigned: ${data.token_no}`);
+            fetchAppointments();
+        }
+        async function deleteAppt(id) { await fetch(`/api/appointments/${id}`, {method: 'DELETE'}); fetchAppointments(); }
+
+        async function fetchPharmacy() {
+            const res = await fetch('/api/pharmacy');
+            const data = await res.json();
+            const tbody = document.getElementById('pharmacy-table-body');
+            tbody.innerHTML = '';
+            data.forEach(m => tbody.innerHTML += `<tr><td>${m.id}</td><td>${m.medicine_name}</td><td>${m.quantity}</td><td>${m.price}</td><td><button class="btn-danger" onclick="deleteMed(${m.id})">Delete</button></td></tr>`);
+        }
+        async function saveMedicine() {
+            const medicine_name = document.getElementById('med-name').value;
+            const quantity = document.getElementById('med-qty').value;
+            const price = document.getElementById('med-price').value;
+            await fetch('/api/pharmacy', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({medicine_name, quantity, price}) });
+            fetchPharmacy(); showToast('Medicine added!');
+        }
+        async function deleteMed(id) { await fetch(`/api/pharmacy/${id}`, {method: 'DELETE'}); fetchPharmacy(); }
+
+        async function fetchBilling() {
+            const res = await fetch('/api/billing');
+            const data = await res.json();
+            const tbody = document.getElementById('billing-table-body');
+            tbody.innerHTML = '';
+            data.forEach(b => tbody.innerHTML += `<tr><td>${b.id}</td><td>${b.patient_name}</td><td>${b.amount}</td><td>${b.status}</td><td><button class="btn-primary" onclick="window.print()">Print</button></td></tr>`);
+        }
+        async function saveBill() {
+            const patient_name = document.getElementById('bill-patient').value;
+            const amount = document.getElementById('bill-amount').value;
+            const status = document.getElementById('bill-status').value;
+            await fetch('/api/billing', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({patient_name, amount, status}) });
+            fetchBilling(); showToast('Bill generated!');
+        }
+
+        async function fetchLaboratory() {
+            const res = await fetch('/api/laboratory');
+            const data = await res.json();
+            const tbody = document.getElementById('laboratory-table-body');
+            tbody.innerHTML = '';
+            data.forEach(l => tbody.innerHTML += `<tr><td>${l.id}</td><td>${l.patient_name}</td><td>${l.test_name}</td><td>${l.result}</td></tr>`);
+        }
+        async function saveLabReport() {
+            const patient_name = document.getElementById('lab-patient').value;
+            const test_name = document.getElementById('lab-test').value;
+            const result = document.getElementById('lab-result').value;
+            await fetch('/api/laboratory', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({patient_name, test_name, result}) });
+            fetchLaboratory(); showToast('Lab report added!');
+        }
+
+        async function fetchDashboardSummary() {
+            const res = await fetch('/api/dashboard-summary');
+            const data = await res.json();
+            document.getElementById('stat-patients').innerText = data.total_patients;
+            document.getElementById('stat-appointments').innerText = data.total_appointments;
+            document.getElementById('stat-medicines').innerText = data.total_medicines;
+            document.getElementById('stat-earnings').innerText = 'Rs. ' + (data.total_earnings || 0).toFixed(2);
+            renderCharts(data);
+        }
+
+        function renderCharts(data) {
+            const barCtx = document.getElementById('barChart').getContext('2d');
+            if(barChartInstance) barChartInstance.destroy();
+            barChartInstance = new Chart(barCtx, {
+                type: 'bar',
+                data: { labels: ['Patients', 'Appointments', 'Inventory'], datasets: [{ data: [data.total_patients, data.total_appointments, data.total_medicines], backgroundColor: ['#2563eb', '#8b5cf6', '#ec4899'] }] }
+            });
+
+            const pieCtx = document.getElementById('pieChart').getContext('2d');
+            if(pieChartInstance) pieChartInstance.destroy();
+            pieChartInstance = new Chart(pieCtx, {
+                type: 'doughnut',
+                data: { labels: ['Consultations', 'Lab Tests', 'Pharmacy'], datasets: [{ data: [50, 30, 20], backgroundColor: ['#10b981', '#3b82f6', '#f59e0b'] }] }
+            });
+        }
+
+        function filterTable(inputId, tbodyId) {
+            const filter = document.getElementById(inputId).value.toLowerCase();
+            const rows = document.getElementById(tbodyId).getElementsByTagName('tr');
+            for (let i = 0; i < rows.length; i++) {
+                rows[i].style.display = (rows[i].textContent.toLowerCase().indexOf(filter) > -1) ? "" : "none";
+            }
+        }
+
+        function exportTableToCSV(tbodyId, filename) {
+            const rows = document.querySelectorAll(`#${tbodyId} tr`);
+            let csv = [];
+            rows.forEach(row => {
+                let cols = row.querySelectorAll('td');
+                let data = [];
+                for(let i = 0; i < cols.length - 1; i++) data.push('"' + cols[i].innerText + '"');
+                if(data.length > 0) csv.push(data.join(','));
+            });
+            let blob = new Blob([csv.join('\n')], { type: 'text/csv' });
+            let link = document.createElement('a');
+            link.download = filename;
+            link.href = window.URL.createObjectURL(blob);
+            link.click();
+        }
+    </script>
+</body>
+</html>
