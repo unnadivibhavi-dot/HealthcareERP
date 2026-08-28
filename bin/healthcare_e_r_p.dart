@@ -17,13 +17,15 @@ Future<void> main() async {
       print('=== Healthcare ERP System ===');
       print('1. Add New Patient');
       print('2. View All Patients');
-      print('3. Exit');
-      stdout.write('Select an option (1-3): ');
+      print('3. Update Patient Details');
+      print('4. Delete a Patient');
+      print('5. Exit');
+      stdout.write('Select an option (1-5): ');
       
       String? choice = stdin.readLineSync();
 
       if (choice == '1') {
-        stdout.write('Enter Patient ID (e.g., P002): ');
+        stdout.write('Enter Patient ID (e.g., P001): ');
         String? id = stdin.readLineSync();
         
         stdout.write('Enter Name: ');
@@ -57,6 +59,40 @@ Future<void> main() async {
         print('-----------------------\n');
 
       } else if (choice == '3') {
+        stdout.write('Enter Patient ID to Update: ');
+        String? id = stdin.readLineSync();
+        
+        stdout.write('Enter New Age: ');
+        int? age = int.tryParse(stdin.readLineSync() ?? '0');
+        
+        stdout.write('Enter New Contact: ');
+        String? contact = stdin.readLineSync();
+
+        try {
+          await conn.query(
+            'UPDATE patients SET age = ?, contact = ? WHERE id = ?',
+            [age, contact, id]
+          );
+          print('\n✅ Patient Updated Successfully!\n');
+        } catch (e) {
+          print('\n❌ Error updating data: $e\n');
+        }
+
+      } else if (choice == '4') {
+        stdout.write('Enter Patient ID to Delete: ');
+        String? id = stdin.readLineSync();
+
+        try {
+          await conn.query(
+            'DELETE FROM patients WHERE id = ?',
+            [id]
+          );
+          print('\n✅ Patient Deleted Successfully!\n');
+        } catch (e) {
+          print('\n❌ Error deleting data: $e\n');
+        }
+
+      } else if (choice == '5') {
         print('Exiting the system...');
         await conn.close();
         break;
